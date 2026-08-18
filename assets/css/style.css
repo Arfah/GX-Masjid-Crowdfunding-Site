@@ -310,6 +310,7 @@ section[id], [id="top"] { scroll-margin-top: 92px; }
   position: relative; height: 14px; border-radius: 999px;
   background: var(--sand-3); overflow: hidden; margin-bottom: .6rem;
 }
+.meter-fill.has-progress, .sticky-meter span.has-progress { min-width: 10px; }
 .meter-fill {
   height: 100%; width: 0;
   background: linear-gradient(90deg, var(--green-600), var(--gold));

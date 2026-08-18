@@ -16,10 +16,11 @@ const CONFIG = {
   target: 2000000,
 
   // How much has been raised so far, in pounds.
-  // ⚠️ SET THIS BEFORE YOU PUBLISH. While it is `null` the site shows an
-  // orange "not set yet" warning in the progress card instead of inventing
-  // a figure. Update it whenever you check Crowdfunder — takes 10 seconds.
-  raised: null,          // e.g. 43250
+  // Update this whenever you check Crowdfunder — it takes 10 seconds, and a
+  // number that visibly moves is what makes a campaign feel alive.
+  // Setting it back to `null` restores the orange "not set yet" warning
+  // instead of showing an invented figure.
+  raised: 1400,
 
   // Number of people who have donated. `null` hides the stat.
   supporters: null,      // e.g. 187
@@ -74,6 +75,11 @@ const CONFIG = {
   const stickyRaised= $('#stickyRaised');
 
   if (hasRaised) {
+    // Give any non-zero total a visible sliver, so an early campaign reads as
+    // "barely begun" rather than as an empty, broken-looking track.
+    if (CONFIG.raised > 0) meterFill.classList.add('has-progress');
+    if (stickyFill && CONFIG.raised > 0) stickyFill.classList.add('has-progress');
+
     meterLabel.textContent = pct < 1
       ? 'Just getting started — early donations are what give a campaign momentum.'
       : `${pct.toFixed(1)}% of the way to £2 million.`;
