@@ -118,3 +118,19 @@ assets/img/favicon.svg  browser tab icon
 - Accessibility: skip link, semantic landmarks, keyboard-operable nav, visible focus
   rings, and all motion disabled under `prefers-reduced-motion`.
 - The sticky bottom donate bar appears on mobile once you scroll past the hero.
+
+---
+
+## Optional: self-host the fonts
+
+The page currently loads Fraunces and Inter from Google Fonts. That works fine,
+but self-hosting them is faster and means the site makes **no third-party
+requests at all** — worth doing for a UK charity site. To switch:
+
+1. Download the latin and latin-ext `woff2` files for both families.
+2. Drop them in `assets/fonts/` and put the matching `@font-face` rules in
+   `assets/css/fonts.css`.
+3. In `index.html`, replace the three `fonts.googleapis.com` / `fonts.gstatic.com`
+   lines with `<link rel="stylesheet" href="assets/css/fonts.css">`.
+
+Ask and I'll do it.
