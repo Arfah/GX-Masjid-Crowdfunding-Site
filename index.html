@@ -7,7 +7,9 @@
 <meta name="description" content="We are raising £2 million to build a permanent masjid in Gerrards Cross — a home for daily prayer, learning and neighbourliness. Give once. Benefit for generations.">
 <meta name="theme-color" content="#0E3B2E">
 
-<!-- Social sharing (WhatsApp / Facebook / X). Replace share-card.png once you have one. -->
+<!-- Social sharing (WhatsApp / Facebook / X). Save the Crowdfunder banner
+     (title + sketch + "Donate today") as assets/img/share-card.png — that
+     composite is exactly the right shape for a link preview. -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="Gerrards Cross Masjid Project">
 <meta property="og:description" content="Raising £2 million to build a permanent masjid in Gerrards Cross. Give once. Benefit for generations.">
@@ -209,6 +211,21 @@
         Gerrards Cross and to be open to everyone in it.
       </p>
     </div>
+
+    <!-- Drop the concept sketch in as assets/img/masjid-concept.jpg. If the file
+         is missing the figure removes itself, so the page never shows a broken
+         image. It must NOT start hidden: display:none would stop the image
+         from ever loading. -->
+    <figure class="vision-figure reveal" id="conceptFigure">
+      <img id="conceptImage"
+           src="assets/img/masjid-concept.jpg"
+           width="1600" height="900" decoding="async"
+           alt="Concept illustration of the proposed Gerrards Cross Masjid: a domed prayer hall with an arched entrance and a minaret, with people walking on the approach path.">
+      <figcaption>
+        <strong>Concept illustration only.</strong> The final design will be developed with
+        architects and shaped by planning consultation with our neighbours in Gerrards Cross.
+      </figcaption>
+    </figure>
 
     <div class="vision-grid">
       <article class="vision-card reveal">

@@ -248,7 +248,22 @@ const CONFIG = {
   if (shareBtn) shareBtn.addEventListener('click', () => share(shareBtn, $('#shareBtnText')));
   $$('[data-share]').forEach(btn => btn.addEventListener('click', () => share(btn, btn)));
 
-  /* ---------- 9. Footer year ---------- */
+  /* ---------- 9. Concept illustration ----------
+     The figure ships visible and removes itself if the image fails to load,
+     so a missing file degrades to nothing rather than to a broken image icon
+     on a live fundraising page. */
+  const conceptFigure = $('#conceptFigure');
+  const conceptImage = $('#conceptImage');
+  if (conceptFigure && conceptImage) {
+    const dropConcept = () => { conceptFigure.hidden = true; };
+    // The image can fail before this script runs (it is parsed earlier in the
+    // document), in which case the error event is already gone — so check the
+    // finished-but-empty state as well as listening for a later failure.
+    if (conceptImage.complete && conceptImage.naturalWidth === 0) dropConcept();
+    conceptImage.addEventListener('error', dropConcept, { once: true });
+  }
+
+  /* ---------- 10. Footer year ---------- */
   const year = $('#year');
   if (year) year.textContent = new Date().getFullYear();
 })();

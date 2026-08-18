@@ -70,6 +70,32 @@ Make it 1200×630px with the headline and the £2m goal on it.
 
 ---
 
+## The two images to add
+
+You have one asset already — the concept banner from the Crowdfunder page. It
+should become **two separate files**, because it is doing two different jobs.
+
+**1. `assets/img/masjid-concept.jpg` — the architectural sketch, cropped out.**
+Crop the banner down to just the drawing of the building (everything to the
+right, above the dark green bar). Drop it in and it appears automatically at the
+top of "The vision", matted in sand against the dark green. If the file is
+missing the figure removes itself, so nothing breaks in the meantime.
+
+Do **not** use the whole banner here. The banner carries its own title lockup,
+its own four icon chips and its own "Donate today" bar — all three of which this
+page already does at full size. Dropping it in mid-page gives you two headlines
+and two donate bars, and reads like a poster pasted onto a website. The drawing
+is the part the page doesn't have.
+
+The banner's own "concept illustration" disclaimers may be cropped away — that's
+fine, the figure caption underneath carries the same statement in words.
+
+**2. `assets/img/share-card.png` — the whole banner, unchanged.**
+This is what WhatsApp, Facebook and iMessage show when someone pastes the link.
+A composite of title, artwork and call-to-action is exactly right for that job,
+and duplication doesn't matter because it never appears on the page itself.
+It's already wired up in the `og:image` tag.
+
 ## Adding photographs
 
 The design deliberately works with **zero photography** — it leans on typography,
