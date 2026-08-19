@@ -25,8 +25,14 @@ const CONFIG = {
   // Number of people who have donated. `null` hides the stat.
   supporters: null,      // e.g. 187
 
-  // Campaign closing date, 'YYYY-MM-DD'. `null` hides the countdown.
-  deadline: null,        // e.g. '2026-12-31'
+  // Campaign closing date, 'YYYY-MM-DD'. The "days left" figure is worked out
+  // from this in the browser, so it counts down on its own every day without
+  // anything needing to run. Set it here and it stays right.
+  //
+  // This takes priority over anything the automatic updater scrapes: a date
+  // you have confirmed should never be overwritten by a mis-read of the
+  // Crowdfunder page. Set it to null if you would rather the updater find it.
+  deadline: '2026-10-15',
 
   // Which stage of the plan you're currently in (1–4). Marks it "We are here"
   // on the timeline and ticks off everything before it.
@@ -202,8 +208,9 @@ const CONFIG = {
         if (typeof d.raised !== 'number' || !isFinite(d.raised) || d.raised < 0) return;
         state.raised = d.raised;
         if (typeof d.supporters === 'number' && d.supporters >= 0) state.supporters = d.supporters;
-        if (typeof d.deadline === 'string') state.deadline = d.deadline;
-        state.ongoing = d.ongoing === true;
+        // A confirmed date in CONFIG wins; the scraped one is only a fallback.
+        if (!CONFIG.deadline && typeof d.deadline === 'string') state.deadline = d.deadline;
+        if (!CONFIG.deadline) state.ongoing = d.ongoing === true;
         state.updatedAt = typeof d.updatedAt === 'string' ? d.updatedAt : null;
         state.live = true;
         render();

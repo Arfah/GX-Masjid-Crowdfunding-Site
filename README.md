@@ -30,7 +30,7 @@ It updates four things on the card:
 | --- | --- |
 | Raised | Scraped from the project page |
 | Supporters | Scraped from the project page |
-| Days left | Scraped, stored as an absolute date so the countdown stays correct between runs |
+| Days left | Counted down in the browser from `deadline` in site.js — currently 15 October 2026. Needs nothing running |
 | Still needed | Calculated in the browser as target minus raised |
 
 If it goes red, the site is unaffected — it keeps serving the last good figures
@@ -39,9 +39,11 @@ script tries three, in order: JSON-LD, embedded page state, then the visible
 "£X raised" text. For the closing date it tries an explicit end date, then a
 visible "N days left", then a written date such as "closes on 14 March 2027".
 
-"Days left" shows "Ongoing" only when the page explicitly says the appeal is
-open-ended — never merely because no date could be found. An unknown date shows
-as a dash, so a failed scrape can never be mistaken for a real answer.
+The closing date in `site.js` **overrides** anything the updater scrapes. A date
+you have confirmed should not be at the mercy of a mis-read page. If you extend
+the campaign on Crowdfunder, change it here too — or set `deadline: null` and
+let the updater find it, in which case "Ongoing" is shown only when the page
+explicitly says the appeal is open-ended, and an unknown date shows as a dash.
 
 **Things that will eventually bite:**
 
