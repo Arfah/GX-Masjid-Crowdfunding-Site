@@ -128,20 +128,31 @@ the figures it writes take over and these are only used if that file is missing
 or unreadable. Keep them roughly current anyway — they are what visitors see if
 the automation breaks.
 
-### 2. Contact email
+### 2. Contact email — done
 
-Search the project for `REPLACE_ME@example.org` — it appears twice in `index.html`
-(final call-to-action, and the footer).
+`m_razwan@outlook.com`, in the final call-to-action and the footer.
 
-### 3. Registered charity number
+### 3. Registered charity number — done
 
-In the footer of `index.html`, `<span class="placeholder">REPLACE_ME</span>`.
-If GXMA isn't a registered charity, delete that sentence rather than leaving it blank —
-donors do check.
+1219279, in the footer.
+
+### 3a. The Islamic Centre website — still outstanding
+
+The old `gxma.org.uk` link has been removed from the footer. In its place is an
+HTML comment marking where the real address goes:
+
+```html
+<!-- REMINDER: add the Islamic Centre website here once it is live, e.g.
+     <a href="https://example.org" rel="noopener">example.org</a> -->
+```
+
+It is a comment rather than visible text on purpose — a "website coming soon"
+line in the footer of a fundraising page reads as unfinished, and unfinished
+costs donations. Uncomment it and fill in the address when the site exists.
 
 ### 4. Facts in the copy that I could not verify
 
-I had no access to your Crowdfunder page or gxma.org.uk when writing this, so the
+I had no access to your Crowdfunder page when writing this, so the
 narrative in **"The need"** and **"The vision"** is written from what is typical for a
 community at this stage. Read those two sections and correct anything that isn't true
 of Gerrards Cross specifically. In particular:
@@ -214,7 +225,7 @@ Pushing to `main` deploys automatically via `.github/workflows/deploy.yml`.
 and set **Source: GitHub Actions**. The first push after that goes live at
 `https://arfah.github.io/GX-Masjid-Crowdfunding-Site/`.
 
-**Custom domain** (e.g. `appeal.gxma.org.uk`): add a file called `CNAME` at the repo
+**Custom domain** (e.g. `appeal.yourdomain.org`): add a file called `CNAME` at the repo
 root containing just the domain, then point a DNS `CNAME` record at
 `arfah.github.io`.
 
