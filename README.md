@@ -18,7 +18,29 @@ twice an hour, reads the totals from your Crowdfunder page via
 `scripts/fetch-campaign.mjs`, and commits them to `assets/data/campaign.json`.
 The site reads that file in the browser. No manual editing.
 
-**Before you rely on it, run it once by hand.** Repo → Actions → "Update
+> **Status: not working, and switched off.** Crowdfunder answer automated
+> requests to the project page with **HTTP 403 Forbidden** — the page never
+> downloads, so the figures cannot be read this way. Every scheduled run failed,
+> so the schedule has been disabled and the workflow is manual-only. The site is
+> unaffected: it serves the figures in `assets/data/campaign.json` and
+> `site.js`, and updating those by hand takes about a minute (see below).
+>
+> The fix is proper access, not a workaround: apply for the
+> [Crowdfunder API beta](https://crowdfunder.co.uk/partners/crowdfunder-api-beta).
+> Once granted, replace `readPage()` in `scripts/fetch-campaign.mjs` with an API
+> call, re-add the `schedule:` block to the workflow, and everything downstream
+> — the guards, the JSON file, the page — works unchanged.
+
+### Updating the figures by hand (one minute, no software)
+
+1. Open [`assets/data/campaign.json`](../../edit/main/assets/data/campaign.json) on GitHub
+2. Click the pencil icon, change `raised` and `supporters`
+3. Click **Commit changes**
+
+The site redeploys itself and the new figures are live in about a minute. No
+laptop, no git, no code — this works from a phone.
+
+**Before you rely on the automation, run it once by hand.** Repo → Actions → "Update
 campaign totals" → Run workflow. I could not test it against the real
 Crowdfunder page (their site is unreachable from the machine this was built
 on), so the very first run is the real test. If it goes green and the numbers

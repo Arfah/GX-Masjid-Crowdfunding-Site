@@ -8,12 +8,16 @@ name: Update campaign totals
 # figures. A red run means Crowdfunder changed their page and the parser in
 # scripts/fetch-campaign.mjs needs updating.
 
+# NOTE: the schedule is switched off. Crowdfunder answer automated requests
+# with HTTP 403, so this cannot read the page and every run failed. Rather
+# than disguise the request to get around their block, this waits for proper
+# API access — see README. Re-add the schedule below once that is granted:
+#
+#   schedule:
+#     - cron: '7,37 * * * *'
+#
 on:
-  schedule:
-    # Twice an hour, deliberately off the hour: GitHub queues scheduled jobs
-    # and runs at :00 are the most delayed.
-    - cron: '7,37 * * * *'
-  workflow_dispatch:        # lets you run it by hand from the Actions tab
+  workflow_dispatch:        # run by hand from the Actions tab
 
 permissions:
   contents: write
