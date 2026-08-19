@@ -54,6 +54,12 @@ const CONFIG = {
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // Three significant figures keeps six-figure movement visible: £1.96M rather
+  // than a "£2M" that would not budge until a quarter of the target was raised.
+  const compactGbp = n => new Intl.NumberFormat('en-GB', {
+    style: 'currency', currency: 'GBP', notation: 'compact', maximumSignificantDigits: 3
+  }).format(n).toUpperCase();
+
   const gbp = (n, opts = {}) => new Intl.NumberFormat('en-GB', {
     style: 'currency', currency: 'GBP', maximumFractionDigits: 0, ...opts
   }).format(n);
@@ -73,6 +79,7 @@ const CONFIG = {
     raised: CONFIG.raised,
     supporters: CONFIG.supporters,
     deadline: CONFIG.deadline,
+    ongoing: false,
     updatedAt: null,
     live: false
   };
@@ -107,8 +114,8 @@ const CONFIG = {
       meterLabel.textContent = p < 1
         ? 'Just getting started — early donations are what give a campaign momentum.'
         : `${p.toFixed(1)}% of the way to £2 million.`;
-      remainingEl.textContent = gbp(Math.max(0, CONFIG.target - state.raised), { notation: 'compact' });
-      if (stickyRaised) stickyRaised.textContent = gbp(state.raised, { notation: 'compact' });
+      remainingEl.textContent = compactGbp(Math.max(0, CONFIG.target - state.raised));
+      if (stickyRaised) stickyRaised.textContent = compactGbp(state.raised);
       // Only claim to be automatic once the updater has actually stamped a run.
       noteEl.textContent = (state.live && state.updatedAt)
         ? `Updated automatically from Crowdfunder · ${timeAgo(state.updatedAt)}`
@@ -135,9 +142,17 @@ const CONFIG = {
       : '—';
 
     if (state.deadline) {
-      const end = new Date(state.deadline + 'T23:59:59');
-      const days = Math.ceil((end - new Date()) / 86400000);
-      daysEl.textContent = days > 0 ? days.toLocaleString('en-GB') : 'Closed';
+      const end = new Date(state.deadline + 'T00:00:00');
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const days = Math.round((end - today) / 86400000);
+      daysEl.textContent = days > 1 ? days.toLocaleString('en-GB')
+        : days === 1 ? '1'
+        : days === 0 ? 'Last day'
+        : 'Closed';
+    } else if (state.ongoing) {
+      // Only shown when the source explicitly says the appeal is open-ended,
+      // never merely because no date could be found.
+      daysEl.textContent = 'Ongoing';
     } else {
       daysEl.textContent = '—';
     }
@@ -188,6 +203,7 @@ const CONFIG = {
         state.raised = d.raised;
         if (typeof d.supporters === 'number' && d.supporters >= 0) state.supporters = d.supporters;
         if (typeof d.deadline === 'string') state.deadline = d.deadline;
+        state.ongoing = d.ongoing === true;
         state.updatedAt = typeof d.updatedAt === 'string' ? d.updatedAt : null;
         state.live = true;
         render();

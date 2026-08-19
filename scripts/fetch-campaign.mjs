@@ -121,6 +121,51 @@ function findSupporters(html) {
   return Number.isFinite(n) && n >= 0 ? n : null;
 }
 
+/**
+ * The closing date. Stored as an absolute date rather than "N days left", so
+ * the countdown stays correct between runs instead of freezing at whatever
+ * number was scraped.
+ */
+function findDeadline(html) {
+  // A: an explicit end date in embedded page state — the most reliable form.
+  const keys = ['endsAt', 'endDate', 'endsOn', 'deadline', 'finishesAt', 'closingDate', 'expiresAt', 'finishDate'];
+  for (const key of keys) {
+    const m = html.match(new RegExp(`"${key}"\\s*:\\s*"([^"]{8,40})"`, 'i'));
+    if (m) {
+      const d = new Date(m[1]);
+      if (!isNaN(d)) return { deadline: isoDate(d), how: 'embedded-json:' + key };
+    }
+  }
+
+  const text = decodeEntities(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ');
+
+  // B: a visible countdown. Convert to a date so it does not go stale.
+  const rel = text.match(/([0-9]{1,4})\s+days?\s+(?:left|to go|remaining)/i);
+  if (rel) {
+    const days = Number(rel[1]);
+    if (Number.isFinite(days) && days >= 0 && days <= 3650) {
+      const d = new Date(Date.now() + days * 86400000);
+      return { deadline: isoDate(d), how: `visible-text:${days} days left` };
+    }
+  }
+
+  // C: a written closing date.
+  const abs = text.match(/(?:ends|closes|closing|finishes)\s+(?:on\s+)?([0-9]{1,2}\s+[A-Za-z]{3,9}\s+[0-9]{4})/i);
+  if (abs) {
+    const d = new Date(abs[1]);
+    if (!isNaN(d)) return { deadline: isoDate(d), how: 'visible-text:written date' };
+  }
+
+  // D: an open-ended project. Only claim this on an explicit statement.
+  if (/\b(?:no\s+(?:end\s+date|deadline)|ongoing\s+(?:project|campaign)|always\s+on)\b/i.test(text)) {
+    return { deadline: null, ongoing: true, how: 'visible-text:open-ended' };
+  }
+
+  return null;
+}
+
+const isoDate = d => d.toISOString().slice(0, 10);
+
 function readPrevious() {
   try { return JSON.parse(readFileSync(OUT, 'utf8')); } catch { return null; }
 }
@@ -148,19 +193,33 @@ if (previous && typeof previous.raised === 'number' && raised < previous.raised 
 }
 
 const supporters = findSupporters(html);
+log(supporters === null ? 'no supporter count found' : `found ${supporters} supporters`);
+
+const when = findDeadline(html);
+if (when) log(`deadline: ${when.ongoing ? 'open-ended' : when.deadline} (via ${when.how})`);
+else log('no closing date found — the countdown will show as unknown');
+
 const next = {
   raised,
   supporters,
+  deadline: when && when.deadline ? when.deadline : null,
+  ongoing: !!(when && when.ongoing),
   target: TARGET,
   source: PROJECT_URL,
   updatedAt: new Date().toISOString()
 };
 
-if (previous && previous.raised === next.raised && previous.supporters === next.supporters) {
+const unchanged = previous
+  && previous.raised === next.raised
+  && previous.supporters === next.supporters
+  && previous.deadline === next.deadline
+  && !!previous.ongoing === next.ongoing;
+
+if (unchanged) {
   log('no change since last run; leaving the file alone');
   process.exit(0);
 }
 
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(next, null, 2) + '\n');
-log(`wrote ${OUT}:`, JSON.stringify({ raised: next.raised, supporters: next.supporters }));
+log(`wrote ${OUT}:`, JSON.stringify({ raised: next.raised, supporters: next.supporters, deadline: next.deadline, ongoing: next.ongoing }));

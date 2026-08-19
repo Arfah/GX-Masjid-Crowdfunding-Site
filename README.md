@@ -24,9 +24,24 @@ Crowdfunder page (their site is unreachable from the machine this was built
 on), so the very first run is the real test. If it goes green and the numbers
 look right, you are done.
 
+It updates four things on the card:
+
+| Figure | Where it comes from |
+| --- | --- |
+| Raised | Scraped from the project page |
+| Supporters | Scraped from the project page |
+| Days left | Scraped, stored as an absolute date so the countdown stays correct between runs |
+| Still needed | Calculated in the browser as target minus raised |
+
 If it goes red, the site is unaffected — it keeps serving the last good figures
-— and the log will say which parsing strategy failed. The script tries three,
-in order: JSON-LD, embedded page state, then the visible "£X raised" text.
+— and the log will say which parsing strategy failed. For the raised total the
+script tries three, in order: JSON-LD, embedded page state, then the visible
+"£X raised" text. For the closing date it tries an explicit end date, then a
+visible "N days left", then a written date such as "closes on 14 March 2027".
+
+"Days left" shows "Ongoing" only when the page explicitly says the appeal is
+open-ended — never merely because no date could be found. An unknown date shows
+as a dash, so a failed scrape can never be mistaken for a real answer.
 
 **Things that will eventually bite:**
 
