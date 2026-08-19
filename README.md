@@ -53,10 +53,12 @@ narrative in **"The need"** and **"The vision"** is written from what is typical
 community at this stage. Read those two sections and correct anything that isn't true
 of Gerrards Cross specifically. In particular:
 
-- "The need" cards — where Jumu'ah is currently held, whether people travel to
-  Slough/Uxbridge/High Wycombe, whether there's a funeral provision gap.
-- "The vision" — the list of facilities is an aspiration list. Cut anything that
-  isn't in your actual plan.
+- "The need" — now rewritten so every claim follows from the one fact your own
+  copy establishes: there is no masjid in Gerrards Cross. The earlier version
+  named specific towns and described overcrowding; none of that was verified,
+  and it has been removed.
+- "The vision" — the list of facilities is an aspiration list, and the section
+  says so. Cut anything that isn't in your actual plan.
 - "What your money builds" — the amounts (£50 mat → £5,000 pillar) are plausible
   but they are **not costed from your quantity surveyor**. Replace with real
   costings, or soften the wording to "roughly".

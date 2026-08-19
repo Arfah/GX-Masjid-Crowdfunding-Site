@@ -386,6 +386,36 @@ section[id], [id="top"] { scroll-margin-top: 92px; }
 .section-lede { font-size: clamp(1.02rem, .98rem + .3vw, 1.18rem); color: var(--ink-soft); max-width: 62ch; }
 
 /* ==========================================================================
+   OUR AIM — the campaign's own words, set quietly and given room.
+   Deliberately the plainest block on the page: it should read as a statement
+   of intent, not as marketing.
+   ========================================================================== */
+.section-aim { background: #fff; padding-block: clamp(3.5rem, 2.8rem + 4vw, 6.5rem); }
+.aim-inner { max-width: 720px; margin-inline: auto; text-align: center; }
+.aim-statement {
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 1.15rem + 1.5vw, 2.2rem);
+  line-height: 1.28; letter-spacing: -.015em;
+  color: var(--green-800);
+  text-wrap: balance;
+  margin-bottom: 2rem;
+}
+.aim-body {
+  display: flex; flex-direction: column; gap: 1.1rem;
+  padding-top: 1.9rem;
+  border-top: 1px solid var(--sand-3);
+  text-align: left;
+}
+.aim-body p { font-size: 1.03rem; color: var(--ink-soft); }
+.aim-dua {
+  margin-top: 2rem;
+  font-family: var(--font-display); font-style: italic;
+  font-size: clamp(1.05rem, .98rem + .4vw, 1.25rem);
+  line-height: 1.4; color: var(--gold-deep);
+  text-wrap: balance;
+}
+
+/* ==========================================================================
    THE NEED
    ========================================================================== */
 .need-grid {
@@ -567,8 +597,14 @@ section[id], [id="top"] { scroll-margin-top: 92px; }
 }
 .tier-link:hover { text-decoration: underline; text-underline-offset: 4px; }
 
+.tier-note {
+  margin-top: 1.6rem;
+  font-size: .85rem; color: var(--muted);
+  max-width: 60ch; margin-inline: auto; text-align: center;
+}
+
 .tier-cta {
-  margin-top: clamp(2.2rem, 1.8rem + 1.5vw, 3.2rem);
+  margin-top: clamp(1.6rem, 1.3rem + 1.2vw, 2.4rem);
   display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
   gap: 1.1rem; text-align: center;
 }
@@ -651,6 +687,12 @@ section[id], [id="top"] { scroll-margin-top: 92px; }
   color: rgba(248, 243, 233, .88); margin-bottom: 2.3rem;
 }
 .final-actions { display: flex; flex-wrap: wrap; gap: .85rem; justify-content: center; margin-bottom: 1.6rem; }
+.final-dua {
+  margin-bottom: 1.1rem;
+  font-family: var(--font-display); font-style: italic;
+  font-size: clamp(1.05rem, 1rem + .4vw, 1.28rem);
+  line-height: 1.4; color: var(--gold-soft); text-wrap: balance;
+}
 .final-note { font-size: .87rem; color: rgba(248, 243, 233, .87); }
 
 /* ==========================================================================
