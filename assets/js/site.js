@@ -20,10 +20,10 @@ const CONFIG = {
   // number that visibly moves is what makes a campaign feel alive.
   // Setting it back to `null` restores the orange "not set yet" warning
   // instead of showing an invented figure.
-  raised: 1400,
+  raised: 1500,
 
   // Number of people who have donated. `null` hides the stat.
-  supporters: null,      // e.g. 187
+  supporters: 15,
 
   // Campaign closing date, 'YYYY-MM-DD'. The "days left" figure is worked out
   // from this in the browser, so it counts down on its own every day without
@@ -106,6 +106,7 @@ const CONFIG = {
     : 0;
 
   let hasAnimated = false;
+  let animationRun = 0;
 
   function render() {
     if (hasRaised()) {
@@ -187,15 +188,21 @@ const CONFIG = {
 
     if (reduceMotion) { raisedEl.textContent = gbp(state.raised); return; }
 
-    const target = state.raised;
+    // Read state.raised on every frame rather than capturing it up front. The
+    // card sits in the hero, so this animation starts before the live figures
+    // finish loading; a captured value meant a total arriving mid-count was
+    // overwritten frame by frame and the counter landed on the stale number.
+    const myRun = ++animationRun;
     const duration = 1600;
     const start = performance.now();
     const easeOut = t => 1 - Math.pow(1 - t, 3);
 
     (function tick(now) {
+      if (myRun !== animationRun) return;   // a newer animation has taken over
       const t = Math.min(1, (now - start) / duration);
-      raisedEl.textContent = gbp(Math.round(target * easeOut(t)));
+      raisedEl.textContent = gbp(Math.round(state.raised * easeOut(t)));
       if (t < 1) requestAnimationFrame(tick);
+      else raisedEl.textContent = gbp(state.raised);   // land exactly on the figure
     })(start);
   }
 
