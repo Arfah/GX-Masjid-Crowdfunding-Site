@@ -486,7 +486,12 @@ section[id], [id="top"] { scroll-margin-top: 92px; }
    and set on the dark section like a drawing pinned to a board. Kept
    rectangular rather than arch-cropped — an arch would clip the minaret. */
 .vision-figure {
-  margin: 0 0 clamp(2rem, 1.6rem + 1.5vw, 3rem);
+  /* The source artwork is 417px wide. Running it full-bleed would upscale it
+     nearly 3x and turn a crisp sketch into mush, so it is presented as a
+     centred plate at close to its native size. Widen this if a higher
+     resolution original ever arrives. */
+  max-width: 640px;
+  margin: 0 auto clamp(2rem, 1.6rem + 1.5vw, 3rem);
   background: var(--sand);
   padding: clamp(.5rem, .4rem + .4vw, .85rem);
   border-radius: calc(var(--radius) + 4px);
