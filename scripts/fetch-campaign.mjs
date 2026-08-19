@@ -79,8 +79,17 @@ async function readPage(url) {
     let body = '';
     try { body = (await res.text()).replace(/\s+/g, ' ').slice(0, 400); } catch {}
     if (body) console.error(`[campaign]   body starts: ${body}`);
-    if (/managed challenge|checking your browser|cf-challenge|captcha|attention required/i.test(body)) {
-      console.error('[campaign]   -> looks like a Cloudflare challenge. This blocks the IP range, not the user-agent; scraping from GitHub Actions will not get past it.');
+    // Cloudflare's interstitial. The real run said cf-mitigated=challenge with a
+    // "Just a moment..." body, which the first version of this check missed.
+    const challenged = h('cf-mitigated') === 'challenge'
+      || /just a moment|managed challenge|checking your browser|cf-challenge|captcha|attention required|enable javascript and cookies/i.test(body);
+    if (challenged) {
+      console.error('[campaign]   -> Cloudflare is serving a challenge page, not the project page.');
+      console.error('[campaign]      This is not a user-agent problem and no combination of headers will pass it:');
+      console.error('[campaign]      the challenge requires running JavaScript in a real browser session.');
+      console.error('[campaign]      Reading the page from GitHub Actions cannot work. Use the Crowdfunder API');
+      console.error('[campaign]      (https://crowdfunder.co.uk/partners/crowdfunder-api-beta), or edit');
+      console.error('[campaign]      assets/data/campaign.json by hand — see the README.');
     }
     fail(`HTTP ${res.status} fetching ${url}`);
   }

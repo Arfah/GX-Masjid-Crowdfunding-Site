@@ -18,8 +18,14 @@ twice an hour, reads the totals from your Crowdfunder page via
 `scripts/fetch-campaign.mjs`, and commits them to `assets/data/campaign.json`.
 The site reads that file in the browser. No manual editing.
 
-> **Status: being tested. The schedule is off until a manual run comes back
-> green.** Crowdfunder's first response to this script was **HTTP 403** — the
+> **Status: scraping does not work, and will not. The schedule is off.**
+> Confirmed on 19 August 2026: Crowdfunder sit behind Cloudflare, which answers
+> requests from GitHub Actions with a challenge page (`cf-mitigated: challenge`,
+> "Just a moment...") rather than the project page. Browser headers were tried
+> and make no difference — a challenge is not a user-agent check. Use the API or
+> the manual route below.
+>
+> Historical detail follows. Crowdfunder's first response to this script was **HTTP 403** — the
 > page never downloaded, so no parsing ran. The request now carries ordinary
 > browser headers, and the script reports *why* it was refused rather than just
 > that it was.
