@@ -11,6 +11,39 @@ in a browser and it just works.
 The site ships with placeholder content. Four things **must** be replaced,
 and a fifth **should** be checked.
 
+### 0. Automatic totals from Crowdfunder
+
+The figures update themselves. `.github/workflows/update-campaign.yml` runs
+twice an hour, reads the totals from your Crowdfunder page via
+`scripts/fetch-campaign.mjs`, and commits them to `assets/data/campaign.json`.
+The site reads that file in the browser. No manual editing.
+
+**Before you rely on it, run it once by hand.** Repo → Actions → "Update
+campaign totals" → Run workflow. I could not test it against the real
+Crowdfunder page (their site is unreachable from the machine this was built
+on), so the very first run is the real test. If it goes green and the numbers
+look right, you are done.
+
+If it goes red, the site is unaffected — it keeps serving the last good figures
+— and the log will say which parsing strategy failed. The script tries three,
+in order: JSON-LD, embedded page state, then the visible "£X raised" text.
+
+**Things that will eventually bite:**
+
+- *Crowdfunder redesign their page.* The parser stops matching and the workflow
+  goes red. The fix is a small edit to `scripts/fetch-campaign.mjs`.
+- *GitHub disables the schedule.* Scheduled workflows are switched off
+  automatically after 60 days without any repo activity. GitHub emails you.
+  Re-enable it from the Actions tab.
+- *Terms of service.* This reads your own project page as a visitor would.
+  Crowdfunder run an [API in open beta](https://crowdfunder.co.uk/partners/crowdfunder-api-beta)
+  — worth applying for, since an official feed cannot break the way scraping
+  can. If you get access, replace `readPage()` in the script and nothing else
+  changes.
+
+To switch the automation off, set `liveDataUrl: null` in `assets/js/site.js`.
+The site reverts to the manual figures below.
+
 ### 1. The campaign numbers — `assets/js/site.js`
 
 Everything numeric lives in one `CONFIG` block at the very top of the file:
@@ -31,9 +64,10 @@ While `raised` is `null`, the progress card shows an **orange "Set-up needed"
 warning** instead of a figure. That is deliberate — it means the site can never
 publish a made-up total. The warning vanishes the moment you put a real number in.
 
-The site cannot read Crowdfunder automatically (Crowdfunder has no public API and
-a static page can't scrape it), so `raised` and `supporters` are updated by hand.
-Editing one line once a week is enough.
+These values are the **fallback**. When the automatic updater above is working,
+the figures it writes take over and these are only used if that file is missing
+or unreadable. Keep them roughly current anyway — they are what visitors see if
+the automation breaks.
 
 ### 2. Contact email
 

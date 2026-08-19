@@ -32,6 +32,13 @@ const CONFIG = {
   // on the timeline and ticks off everything before it.
   currentPhase: 1,
 
+  // Where the automatic updater writes the latest figures. A GitHub Action
+  // refreshes this file from Crowdfunder every 30 minutes. If the file is
+  // missing, stale or unreadable, the page silently falls back to the
+  // `raised`/`supporters`/`deadline` values above — it never shows nothing.
+  // Set to null to switch the automation off and go back to manual figures.
+  liveDataUrl: 'assets/data/campaign.json',
+
   // Text shown under the progress bar and in share messages.
   shareText: 'We’re building a masjid in Gerrards Cross. Every pound is sadaqah jariyah — please give what you can and pass this on.'
 };
@@ -58,75 +65,134 @@ const CONFIG = {
     el.rel = 'noopener noreferrer';
   });
 
-  /* ---------- 2. Progress card ---------- */
-  const hasRaised = typeof CONFIG.raised === 'number' && CONFIG.raised >= 0;
-  const pct = hasRaised
-    ? Math.max(0, Math.min(100, (CONFIG.raised / CONFIG.target) * 100))
+  /* ---------- 2. Campaign figures ----------
+     `state` is what the card actually renders. It starts from CONFIG and is
+     replaced by live figures if the updater file loads. Everything downstream
+     reads `state`, never CONFIG, so one render path serves both cases. */
+  const state = {
+    raised: CONFIG.raised,
+    supporters: CONFIG.supporters,
+    deadline: CONFIG.deadline,
+    updatedAt: null,
+    live: false
+  };
+
+  const raisedEl     = $('#raisedFigure');
+  const meterFill    = $('#meterFill');
+  const meterLabel   = $('#meterLabel');
+  const remainingEl  = $('#statRemaining');
+  const supportersEl = $('#statSupporters');
+  const daysEl       = $('#statDays');
+  const noteEl       = $('#progressNote');
+  const stickyFill   = $('#stickyFill');
+  const stickyRaised = $('#stickyRaised');
+
+  const hasRaised = () => typeof state.raised === 'number' && state.raised >= 0;
+  const pct = () => hasRaised()
+    ? Math.max(0, Math.min(100, (state.raised / CONFIG.target) * 100))
     : 0;
 
-  const raisedEl    = $('#raisedFigure');
-  const meterFill   = $('#meterFill');
-  const meterLabel  = $('#meterLabel');
-  const remainingEl = $('#statRemaining');
-  const supportersEl= $('#statSupporters');
-  const daysEl      = $('#statDays');
-  const noteEl      = $('#progressNote');
-  const stickyFill  = $('#stickyFill');
-  const stickyRaised= $('#stickyRaised');
+  let hasAnimated = false;
 
-  if (hasRaised) {
-    // Give any non-zero total a visible sliver, so an early campaign reads as
-    // "barely begun" rather than as an empty, broken-looking track.
-    if (CONFIG.raised > 0) meterFill.classList.add('has-progress');
-    if (stickyFill && CONFIG.raised > 0) stickyFill.classList.add('has-progress');
+  function render() {
+    if (hasRaised()) {
+      // Give any non-zero total a visible sliver, so an early campaign reads as
+      // "barely begun" rather than as an empty, broken-looking track.
+      if (state.raised > 0) {
+        meterFill.classList.add('has-progress');
+        if (stickyFill) stickyFill.classList.add('has-progress');
+      }
+      raisedEl.style.color = '';
+      const p = pct();
+      meterLabel.textContent = p < 1
+        ? 'Just getting started — early donations are what give a campaign momentum.'
+        : `${p.toFixed(1)}% of the way to £2 million.`;
+      remainingEl.textContent = gbp(Math.max(0, CONFIG.target - state.raised), { notation: 'compact' });
+      if (stickyRaised) stickyRaised.textContent = gbp(state.raised, { notation: 'compact' });
+      // Only claim to be automatic once the updater has actually stamped a run.
+      noteEl.textContent = (state.live && state.updatedAt)
+        ? `Updated automatically from Crowdfunder · ${timeAgo(state.updatedAt)}`
+        : 'Totals are updated by hand from Crowdfunder.';
+      if (hasAnimated) {
+        meterFill.style.width = p + '%';
+        if (stickyFill) stickyFill.style.width = p + '%';
+        raisedEl.textContent = gbp(state.raised);
+      }
+    } else {
+      // Loud, unmissable, and impossible to publish by accident.
+      raisedEl.textContent = '£ —';
+      raisedEl.style.color = '#B45309';
+      meterLabel.innerHTML = '<strong style="color:#B45309">Set-up needed:</strong> open ' +
+        '<code>assets/js/site.js</code> and fill in <code>raised</code>, <code>supporters</code> ' +
+        'and <code>deadline</code>. This warning disappears once you do.';
+      remainingEl.textContent = '—';
+      noteEl.textContent = '';
+      if (stickyRaised) stickyRaised.textContent = '£—';
+    }
 
-    meterLabel.textContent = pct < 1
-      ? 'Just getting started — early donations are what give a campaign momentum.'
-      : `${pct.toFixed(1)}% of the way to £2 million.`;
-    remainingEl.textContent = gbp(Math.max(0, CONFIG.target - CONFIG.raised), { notation: 'compact' });
-    if (stickyRaised) stickyRaised.textContent = gbp(CONFIG.raised, { notation: 'compact' });
-    noteEl.textContent = 'Totals are updated by hand from Crowdfunder.';
-  } else {
-    // Loud, unmissable, and impossible to publish by accident.
-    raisedEl.textContent = '£ —';
-    raisedEl.style.color = '#B45309';
-    meterLabel.innerHTML = '<strong style="color:#B45309">Set-up needed:</strong> open ' +
-      '<code>assets/js/site.js</code> and fill in <code>raised</code>, <code>supporters</code> ' +
-      'and <code>deadline</code>. This warning disappears once you do.';
-    remainingEl.textContent = '—';
-    noteEl.textContent = '';
-    if (stickyRaised) stickyRaised.textContent = '£—';
+    supportersEl.textContent = typeof state.supporters === 'number'
+      ? state.supporters.toLocaleString('en-GB')
+      : '—';
+
+    if (state.deadline) {
+      const end = new Date(state.deadline + 'T23:59:59');
+      const days = Math.ceil((end - new Date()) / 86400000);
+      daysEl.textContent = days > 0 ? days.toLocaleString('en-GB') : 'Closed';
+    } else {
+      daysEl.textContent = '—';
+    }
   }
 
-  supportersEl.textContent = typeof CONFIG.supporters === 'number'
-    ? CONFIG.supporters.toLocaleString('en-GB')
-    : '—';
-
-  if (CONFIG.deadline) {
-    const end = new Date(CONFIG.deadline + 'T23:59:59');
-    const days = Math.ceil((end - new Date()) / 86400000);
-    daysEl.textContent = days > 0 ? days.toLocaleString('en-GB') : 'Closed';
-  } else {
-    daysEl.textContent = '—';
+  function timeAgo(iso) {
+    const mins = Math.round((Date.now() - new Date(iso)) / 60000);
+    if (!isFinite(mins) || mins < 0) return 'just now';
+    if (mins < 2) return 'just now';
+    if (mins < 60) return `${mins} minutes ago`;
+    const hrs = Math.round(mins / 60);
+    if (hrs < 24) return hrs === 1 ? 'an hour ago' : `${hrs} hours ago`;
+    const days = Math.round(hrs / 24);
+    return days === 1 ? 'yesterday' : `${days} days ago`;
   }
 
-  /* ---------- 3. Animate the meter + count up, once it scrolls into view --- */
+  render();
+
+  /* ---------- 3. Live figures, then animate ---------- */
   function animateProgress() {
-    if (meterFill) meterFill.style.width = pct + '%';
-    if (stickyFill) stickyFill.style.width = pct + '%';
-    if (!hasRaised) return;
+    hasAnimated = true;
+    const p = pct();
+    if (meterFill) meterFill.style.width = p + '%';
+    if (stickyFill) stickyFill.style.width = p + '%';
+    if (!hasRaised()) return;
 
-    if (reduceMotion) { raisedEl.textContent = gbp(CONFIG.raised); return; }
+    if (reduceMotion) { raisedEl.textContent = gbp(state.raised); return; }
 
+    const target = state.raised;
     const duration = 1600;
     const start = performance.now();
     const easeOut = t => 1 - Math.pow(1 - t, 3);
 
     (function tick(now) {
       const t = Math.min(1, (now - start) / duration);
-      raisedEl.textContent = gbp(Math.round(CONFIG.raised * easeOut(t)));
+      raisedEl.textContent = gbp(Math.round(target * easeOut(t)));
       if (t < 1) requestAnimationFrame(tick);
     })(start);
+  }
+
+  // Pull the live figures. Any failure leaves the CONFIG fallback in place.
+  if (CONFIG.liveDataUrl && typeof fetch === 'function') {
+    fetch(CONFIG.liveDataUrl, { cache: 'no-store' })
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error(r.status))))
+      .then(d => {
+        // Only trust a sane number. A broken scrape must not blank the card.
+        if (typeof d.raised !== 'number' || !isFinite(d.raised) || d.raised < 0) return;
+        state.raised = d.raised;
+        if (typeof d.supporters === 'number' && d.supporters >= 0) state.supporters = d.supporters;
+        if (typeof d.deadline === 'string') state.deadline = d.deadline;
+        state.updatedAt = typeof d.updatedAt === 'string' ? d.updatedAt : null;
+        state.live = true;
+        render();
+      })
+      .catch(() => { /* keep the static figures */ });
   }
 
   const card = $('.progress-card');

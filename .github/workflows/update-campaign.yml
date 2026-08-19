@@ -1,0 +1,48 @@
+name: Update campaign totals
+
+# Reads the live figures from Crowdfunder and commits them to
+# assets/data/campaign.json. The commit triggers the Pages deploy, so the
+# site picks the new numbers up automatically.
+#
+# If this job goes red, the site is fine — it keeps serving the last good
+# figures. A red run means Crowdfunder changed their page and the parser in
+# scripts/fetch-campaign.mjs needs updating.
+
+on:
+  schedule:
+    # Twice an hour, deliberately off the hour: GitHub queues scheduled jobs
+    # and runs at :00 are the most delayed.
+    - cron: '7,37 * * * *'
+  workflow_dispatch:        # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-campaign
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Read the latest totals from Crowdfunder
+        run: node scripts/fetch-campaign.mjs
+
+      - name: Commit if the figures changed
+        run: |
+          if git diff --quiet -- assets/data/campaign.json; then
+            echo "No change in the totals — nothing to commit."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/data/campaign.json
+          git commit -m "Update campaign totals from Crowdfunder"
+          git push
