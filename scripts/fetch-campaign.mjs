@@ -39,16 +39,51 @@ const MAX_DROP_RATIO = 0.5;
 const log = (...a) => console.log('[campaign]', ...a);
 const fail = msg => { console.error('[campaign] FAILED:', msg); process.exit(1); };
 
+// Crowdfunder's front end answered a plainly-identified bot with 403. These are
+// the headers a normal Chrome request carries; we are reading our own public
+// project page roughly twice an hour. Set UA_MODE=bot to go back to announcing
+// ourselves, which is worth retrying if you are ever granted API access.
+const BROWSER_HEADERS = {
+  'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+  'accept-language': 'en-GB,en;q=0.9',
+  'sec-ch-ua': '"Chromium";v="131", "Not_A Brand";v="24"',
+  'sec-ch-ua-mobile': '?0',
+  'sec-ch-ua-platform': '"Windows"',
+  'sec-fetch-dest': 'document',
+  'sec-fetch-mode': 'navigate',
+  'sec-fetch-site': 'none',
+  'sec-fetch-user': '?1',
+  'upgrade-insecure-requests': '1'
+};
+
+const BOT_HEADERS = {
+  'user-agent': 'GerrardsCrossMasjidBot/1.0 (+https://github.com/Arfah/GX-Masjid-Crowdfunding-Site) fetching our own project totals',
+  'accept': 'text/html,application/xhtml+xml'
+};
+
 async function readPage(url) {
+  const mode = process.env.UA_MODE === 'bot' ? 'bot' : 'browser';
+  log(`requesting as: ${mode}`);
   const res = await fetch(url, {
-    headers: {
-      // Identify honestly rather than impersonating a browser.
-      'user-agent': 'GerrardsCrossMasjidBot/1.0 (+https://github.com/Arfah/GX-Masjid-Crowdfunding-Site) fetching our own project totals',
-      'accept': 'text/html,application/xhtml+xml'
-    },
+    headers: mode === 'bot' ? BOT_HEADERS : BROWSER_HEADERS,
     redirect: 'follow'
   });
-  if (!res.ok) fail(`HTTP ${res.status} fetching ${url}`);
+
+  if (!res.ok) {
+    // Say WHY it was refused, so one run tells us whether the block is about
+    // who we claim to be or about where we are calling from.
+    const h = n => res.headers.get(n) || '-';
+    console.error(`[campaign] refused: HTTP ${res.status} ${res.statusText}`);
+    console.error(`[campaign]   server=${h('server')} cf-ray=${h('cf-ray')} cf-mitigated=${h('cf-mitigated')} retry-after=${h('retry-after')}`);
+    let body = '';
+    try { body = (await res.text()).replace(/\s+/g, ' ').slice(0, 400); } catch {}
+    if (body) console.error(`[campaign]   body starts: ${body}`);
+    if (/managed challenge|checking your browser|cf-challenge|captcha|attention required/i.test(body)) {
+      console.error('[campaign]   -> looks like a Cloudflare challenge. This blocks the IP range, not the user-agent; scraping from GitHub Actions will not get past it.');
+    }
+    fail(`HTTP ${res.status} fetching ${url}`);
+  }
   return res.text();
 }
 

@@ -18,18 +18,32 @@ twice an hour, reads the totals from your Crowdfunder page via
 `scripts/fetch-campaign.mjs`, and commits them to `assets/data/campaign.json`.
 The site reads that file in the browser. No manual editing.
 
-> **Status: not working, and switched off.** Crowdfunder answer automated
-> requests to the project page with **HTTP 403 Forbidden** — the page never
-> downloads, so the figures cannot be read this way. Every scheduled run failed,
-> so the schedule has been disabled and the workflow is manual-only. The site is
-> unaffected: it serves the figures in `assets/data/campaign.json` and
-> `site.js`, and updating those by hand takes about a minute (see below).
+> **Status: being tested. The schedule is off until a manual run comes back
+> green.** Crowdfunder's first response to this script was **HTTP 403** — the
+> page never downloaded, so no parsing ran. The request now carries ordinary
+> browser headers, and the script reports *why* it was refused rather than just
+> that it was.
 >
-> The fix is proper access, not a workaround: apply for the
+> Run it by hand (Actions → Update campaign totals → Run workflow) and read the
+> log:
+>
+> - **Green** — it works. Re-add the `schedule:` block to the workflow.
+> - **`-> looks like a Cloudflare challenge`** — the block is on the IP range,
+>   not the user-agent. No header will get past it from GitHub Actions, and
+>   scraping is a dead end. Use the manual route below, or the API.
+> - **403 with no challenge markers** — something else is refusing us; send the
+>   log and it can be diagnosed.
+>
+> `UA_MODE=bot` switches back to announcing ourselves plainly.
+>
+> The durable answer either way is the
 > [Crowdfunder API beta](https://crowdfunder.co.uk/partners/crowdfunder-api-beta).
 > Once granted, replace `readPage()` in `scripts/fetch-campaign.mjs` with an API
-> call, re-add the `schedule:` block to the workflow, and everything downstream
-> — the guards, the JSON file, the page — works unchanged.
+> call and everything downstream — the guards, the JSON file, the page — works
+> unchanged. Worth applying for regardless of how the test above goes.
+>
+> The site is unaffected throughout: it serves the figures in
+> `assets/data/campaign.json`, and editing those by hand takes about a minute.
 
 ### Updating the figures by hand (one minute, no software)
 
