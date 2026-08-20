@@ -219,15 +219,25 @@ Ask and I'll wire them in.
 
 ## Publishing
 
-Pushing to `main` deploys automatically via `.github/workflows/deploy.yml`.
+The live site is **https://gx-masjid-crowdfunding.netlify.app/**, hosted on
+Netlify. Pushing to `main` deploys it automatically — there is no build step, so
+Netlify simply serves the repo root. Settings live in `netlify.toml`; the only
+one worth knowing is that `assets/data/campaign.json` is served `no-cache`, so a
+figures update is never held back by a stale browser cache.
 
-**One-time setup:** in the repo, go to **Settings → Pages → Build and deployment**
-and set **Source: GitHub Actions**. The first push after that goes live at
-`https://arfah.github.io/GX-Masjid-Crowdfunding-Site/`.
+GitHub Pages still builds from `.github/workflows/deploy.yml` and remains
+reachable at `https://arfah.github.io/GX-Masjid-Crowdfunding-Site/`. It is a
+spare, not the address to hand out. The `og:` tags and the `canonical` link in
+`index.html` both name the Netlify URL, so shared links and search results point
+at the live site regardless of which copy someone lands on. **If you ever change
+the Netlify site name, change those three tags to match** — otherwise every
+WhatsApp and Facebook share will keep advertising the old address. To retire the
+Pages copy entirely, delete `.github/workflows/deploy.yml`.
 
-**Custom domain** (e.g. `appeal.yourdomain.org`): add a file called `CNAME` at the repo
-root containing just the domain, then point a DNS `CNAME` record at
-`arfah.github.io`.
+**Custom domain** (e.g. `appeal.gxmasjid.org`): add it under **Domain management**
+in the Netlify site settings and follow the DNS records it gives you. Netlify
+issues the HTTPS certificate itself. Update the `og:` and `canonical` tags to the
+new domain once it resolves.
 
 ---
 
@@ -238,7 +248,8 @@ index.html              all page content and copy
 assets/css/style.css    all styling (design tokens at the top under :root)
 assets/js/site.js       CONFIG block + progress bar, countdown, share, scroll reveal
 assets/img/favicon.svg  browser tab icon
-.github/workflows/      GitHub Pages deployment
+netlify.toml            Netlify deployment settings (the live site)
+.github/workflows/      GitHub Pages deployment + the campaign totals updater
 ```
 
 ## Notes on how it's built
