@@ -1,0 +1,39 @@
+# Netlify configuration.
+#
+# This is a plain static site — no framework, no build step. Netlify serves the
+# repo root as-is, exactly as GitHub Pages does, so both deployments stay in
+# step and every path in index.html can carry on being relative.
+
+[build]
+  publish = "."
+  command = ""
+
+# The campaign figures are rewritten by the update-campaign workflow. If a
+# browser cached this file the site would keep showing yesterday's total, so it
+# is always revalidated. Everything else is safe to cache.
+[[headers]]
+  for = "/assets/data/campaign.json"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/assets/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/assets/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/assets/img/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"
